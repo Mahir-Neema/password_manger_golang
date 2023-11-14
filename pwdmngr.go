@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
+	"strings"
 )
 
 const pwd_db = "password.db"
@@ -28,6 +30,27 @@ func store(platform string, username string, password string) {
 	}
 }
 
+func retrieve(platform string) {
+	file, err := os.Open(pwd_db)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	input := bufio.NewScanner(file)
+	// . bufio is an inbuilt package which does buffered IO operations. It’s very convenient to use. It’s scanner type which we are getting by bufio.NewScanner(f) can read input and break into lines which we are using in our code.
+
+	for input.Scan() {
+		entry := strings.Split(input.Text(), ",")
+		if entry[0] == platform {
+			fmt.Println(entry[1], entry[2])
+			return
+		}
+	}
+	fmt.Printf("Platform %s not known\n", platform)
+
+}
+
 func main() {
 	fmt.Println("Password manager")
 
@@ -35,12 +58,11 @@ func main() {
 	args = os.Args
 	// os.Args is an array storing all the command line parameters in order they were passed to program.
 	// fmt.Println(args)
-	if len(args) < 5 { // check if there are enough arguments
-		fmt.Println("Usage: go run main.go add platform username password")
-		return
-	}
-
 	if args[1] == "add" {
 		store(args[2], args[3], args[4])
+	} else if args[1] == "get" {
+		retrieve(args[2])
+	} else {
+		fmt.Println("Invalid operation ", args[1])
 	}
 }
